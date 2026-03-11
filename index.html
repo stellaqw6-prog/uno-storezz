@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>UNO-STOREZZ | GITHUB EDITION</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* ====== CSS ANDA TETAP SAMA ===== */
+        :root { 
+            --accent: #00eaff; 
+            --bg: #020406; 
+            --glass: rgba(255, 255, 255, 0.03); 
+            --glass-border: rgba(255, 255, 255, 0.1); 
+            --dev-color: #ff0055;
+            --gold: #ffcc00;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Rajdhani', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: #fff; overflow-x: hidden; padding-bottom: 100px; transition: 0.3s; }
+        
+        .bg-video { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; filter: brightness(0.2) saturate(1.2); pointer-events: none; }
+        .overlay-vignette { position: fixed; inset: 0; background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.8) 100%); z-index: -1; pointer-events: none; }
+
+        .android-optimized { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+        button, .cat-btn, .dock-item, .buy-btn, .claim-btn { min-height: 44px; touch-action: manipulation; }
+        input, select, textarea { font-size: 16px !important; }
+
+        #welcome-overlay { 
+            position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 1s ease-in-out;
+            background: radial-gradient(circle at 50% 50%, #0a1a2a, #000000); overflow: hidden;
+        }
+        #welcome-overlay::before {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(0,234,255,0.1) 0%, transparent 70%); animation: rotate 20s linear infinite;
+        }
+        #welcome-overlay::after {
+            content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), var(--dev-color), var(--gold), transparent); animation: scanline 3s linear infinite;
+        }
+        @keyframes rotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes scanline { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        
+        .premium-loader { position: relative; width: 150px; height: 150px; margin-bottom: 30px; z-index: 10; }
+        .premium-loader .ring { position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 2px solid transparent; animation: ringRotate 2s linear infinite; }
+        .premium-loader .ring:nth-child(1) { border-top-color: var(--accent); border-bottom-color: var(--dev-color); animation-duration: 2s; }
+        .premium-loader .ring:nth-child(2) { border-left-color: var(--gold); border-right-color: var(--accent); width: 110px; height: 110px; top: 20px; left: 20px; animation-duration: 3s; animation-direction: reverse; }
+        .premium-loader .ring:nth-child(3) { border-top-color: var(--dev-color); border-bottom-color: var(--gold); width: 70px; height: 70px; top: 40px; left: 40px; animation-duration: 4s; }
+        .premium-loader .core { position: absolute; width: 50px; height: 50px; background: linear-gradient(135deg, var(--accent), var(--dev-color)); border-radius: 50%; top: 50px; left: 50px; display: flex; align-items: center; justify-content: center; color: #000; font-size: 20px; font-weight: 900; box-shadow: 0 0 30px var(--accent); animation: pulse 1.5s ease-in-out infinite; }
+        @keyframes ringRotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes pulse { 0% { transform: scale(1); box-shadow: 0 0 30px var(--accent); } 50% { transform: scale(1.1); box-shadow: 0 0 50px var(--accent), 0 0 50px var(--dev-color); } 100% { transform: scale(1); box-shadow: 0 0 30px var(--accent); } }
+        
+        .premium-title { font-family: 'Orbitron'; font-size: 32px; font-weight: 900; text-transform: uppercase; letter-spacing: 6px; margin-bottom: 15px; position: relative; z-index: 10; background: linear-gradient(135deg, #fff, var(--accent), var(--dev-color), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 30px rgba(0,234,255,0.3); animation: glow 3s ease-in-out infinite; }
+        @keyframes glow { 0% { filter: brightness(1); } 50% { filter: brightness(1.2); } 100% { filter: brightness(1); } }
+        
+        .premium-subtitle { font-family: 'Orbitron'; font-size: 12px; letter-spacing: 3px; color: #ccc; margin-bottom: 30px; position: relative; z-index: 10; text-transform: uppercase; }
+        .premium-subtitle span { color: var(--accent); font-weight: 900; }
+        
+        .enter-btn { background: rgba(255,255,255,0.03); border: 2px solid var(--accent); color: var(--accent); padding: 15px 40px; font-family: 'Orbitron'; font-size: 12px; font-weight: 900; letter-spacing: 3px; border-radius: 50px; cursor: pointer; transition: 0.3s; position: relative; z-index: 10; overflow: hidden; backdrop-filter: blur(10px); box-shadow: 0 0 20px rgba(0,234,255,0.2); min-height: 50px; }
+        .enter-btn:active { background: var(--accent); color: #000; transform: scale(0.98); }
+
+        header { padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; background: rgba(2,4,6,0.9); backdrop-filter: blur(15px); border-bottom: 1px solid var(--glass-border); }
+        .logo { font-family: 'Orbitron'; font-size: 1rem; font-weight: 900; letter-spacing: 2px; background: linear-gradient(90deg, #fff, var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .profile-btn { width: 36px; height: 36px; border-radius: 10px; border: 1.5px solid var(--accent); object-fit: cover; box-shadow: 0 0 10px var(--accent); }
+
+        .app-container { max-width: 480px; margin: 0 auto; padding: 12px; }
+
+        .hero-card { border-radius: 20px; overflow: hidden; margin-bottom: 16px; border: 1px solid var(--glass-border); height: 160px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative; }
+        .slider-wrapper { display: flex; height: 100%; transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1); }
+        .slide { min-width: 100%; height: 100%; }
+        .slide img { width: 100%; height: 100%; object-fit: cover; }
+
+        .gacha-box { background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(0,234,255,0.05)); border: 1px solid var(--glass-border); padding: 12px; border-radius: 16px; margin-bottom: 16px; position: relative; overflow: hidden; }
+        .gacha-title { font-family: 'Orbitron'; font-size: 11px; color: var(--accent); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; font-weight: 700; }
+        
+        .prize-list { display: flex; flex-direction: column; gap: 4px; margin: 8px 0; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 10px; max-height: 180px; overflow-y: auto; }
+        .prize-item { display: flex; align-items: center; gap: 6px; padding: 5px 8px; background: rgba(255,255,255,0.02); border-radius: 6px; font-size: 8px; }
+        .prize-item i { width: 14px; color: var(--gold); }
+        .prize-item .prize-name { flex: 1; color: #fff; }
+        .prize-item .prize-chance { font-size: 7px; padding: 2px 4px; background: rgba(255,204,0,0.2); border-radius: 8px; color: var(--gold); }
+        .prize-legendary { border-left: 2px solid #ff00aa; }
+        .prize-epic { border-left: 2px solid #aa00ff; }
+        .prize-rare { border-left: 2px solid #00aaff; }
+        .prize-common { border-left: 2px solid #aaa; }
+
+        .category-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; }
+        .cat-btn { background: var(--glass); border: 1px solid var(--glass-border); padding: 10px 3px; border-radius: 12px; text-align: center; transition: 0.3s; cursor: pointer; }
+        .cat-btn.active { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 15px var(--accent); }
+        .cat-btn.active i, .cat-btn.active span { color: #000; }
+        .cat-btn i { font-size: 1.1rem; margin-bottom: 4px; color: var(--accent); display: block; }
+        .cat-btn span { font-size: 8px; font-weight: 700; text-transform: uppercase; font-family: 'Orbitron'; }
+
+        .glass-card { background: var(--glass); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); border-radius: 16px; padding: 14px; margin-bottom: 12px; transition: 0.3s; }
+        .card-title { font-family: 'Orbitron'; font-size: 13px; margin-bottom: 4px; letter-spacing: 1px; }
+        .price-tag { font-size: 1.3rem; font-weight: 800; color: var(--accent); margin-bottom: 12px; font-family: 'Rajdhani'; }
+
+        .buy-btn { width: 100%; padding: 12px; border-radius: 10px; border: none; background: linear-gradient(90deg, var(--accent), #00b4d8); color: #000; font-weight: 900; font-family: 'Orbitron'; cursor: pointer; font-size: 10px; text-transform: uppercase; transition: 0.3s; box-shadow: 0 4px 15px rgba(0, 234, 255, 0.3); min-height: 44px; }
+        .buy-btn:active { transform: scale(0.98); }
+        
+        .claim-btn { background: linear-gradient(135deg, var(--gold), #ffaa00); color: #000; border: none; padding: 10px; border-radius: 8px; font-family: 'Orbitron'; font-size: 9px; font-weight: 900; cursor: pointer; transition: 0.3s; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 8px; min-height: 40px; }
+        .claim-btn:active { transform: scale(0.98); }
+        .claim-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .dock-nav { position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 420px; height: 60px; background: rgba(5, 7, 10, 0.9); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 18px; display: flex; align-items: center; z-index: 1000; }
+        .dock-item { color: #666; flex: 1; text-align: center; font-size: 9px; font-family: 'Orbitron'; text-decoration: none; font-weight: 700; transition: 0.3s; min-height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
+        .dock-item.active { color: var(--accent); }
+        .dock-item i { font-size: 1.2rem; margin-bottom: 2px; display: block; }
+
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 15px; backdrop-filter: blur(10px); }
+        .modal-content { background: #080a0f; border: 1px solid var(--accent); border-radius: 20px; width: 100%; max-width: 380px; max-height: 80vh; overflow-y: auto; padding: 20px; position: relative; }
+        input, select, textarea { width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); padding: 12px; border-radius: 10px; color: #fff; margin-bottom: 8px; outline: none; font-size: 16px !important; }
+
+        .color-picker-container { display: flex; gap: 6px; justify-content: center; margin: 12px 0; flex-wrap: wrap; }
+        .color-dot { width: 26px; height: 26px; border-radius: 6px; cursor: pointer; border: 1.5px solid rgba(255,255,255,0.1); transition: 0.2s; }
+        .color-dot:active { transform: scale(0.9); }
+
+        .name-tag-container { display: flex; justify-content: center; margin: 12px 0; }
+        .name-tag { display: inline-flex; align-items: center; gap: 6px; padding: 7px 16px; border-radius: 25px; font-family: 'Orbitron'; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; position: relative; overflow: hidden; }
+        .name-tag.member-tag { background: linear-gradient(135deg, var(--accent), #0088ff); color: #000; box-shadow: 0 0 20px rgba(0,234,255,0.5); border: 1px solid rgba(255,255,255,0.3); }
+        .name-tag.developer-tag { background: linear-gradient(135deg, var(--dev-color), #ff4400); color: #000; box-shadow: 0 0 20px rgba(255,0,85,0.5); border: 1px solid rgba(255,255,255,0.3); }
+        .name-tag::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent); transform: rotate(45deg); animation: shine 3s infinite; }
+        @keyframes shine { 0% { transform: translateX(-100%) rotate(45deg); } 100% { transform: translateX(100%) rotate(45deg); } }
+        .edit-name-btn { background: var(--glass); border: 1px solid var(--accent); color: var(--accent); padding: 7px 12px; border-radius: 8px; font-size: 8px; font-family: 'Orbitron'; font-weight: 700; cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; gap: 4px; margin-left: 8px; min-height: 36px; }
+        .edit-name-btn:active { background: var(--accent); color: #000; }
+        .profile-name-section { display: flex; align-items: center; justify-content: center; margin-bottom: 12px; flex-wrap: wrap; }
+
+        .julukan-badge { display: inline-flex; align-items: center; gap: 3px; padding: 3px 8px; background: linear-gradient(135deg, var(--gold), #ffaa00); border-radius: 16px; font-size: 8px; font-weight: 900; color: #000; font-family: 'Orbitron'; box-shadow: 0 0 10px rgba(255,204,0,0.3); margin-left: 4px; }
+        .profile-julukan { display: inline-block; padding: 2px 8px; background: linear-gradient(135deg, var(--gold), #ffaa00); border-radius: 12px; color: #000; font-size: 8px; font-weight: 900; font-family: 'Orbitron'; margin-top: 4px; box-shadow: 0 0 10px rgba(255,204,0,0.3); }
+        .set-julukan-btn { background: linear-gradient(135deg, var(--gold), #ffaa00); border: none; color: #000; padding: 4px 8px; border-radius: 6px; font-size: 7px; font-weight: 900; font-family: 'Orbitron'; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 3px; margin-right: 6px; min-height: 32px; }
+        .set-julukan-btn:active { transform: scale(0.95); }
+
+        .payment-detail-card { background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px; margin-bottom: 16px; }
+        .payment-method { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 10px; padding: 10px; margin: 12px 0; }
+        .payment-method i { font-size: 1.3rem; color: var(--gold); }
+        .payment-method .method-name { font-weight: 900; color: var(--accent); font-size: 11px; }
+        .bank-account { background: linear-gradient(135deg, rgba(0,234,255,0.1), rgba(255,204,0,0.1)); border: 1px solid var(--gold); border-radius: 10px; padding: 12px; text-align: center; margin: 12px 0; }
+        .bank-account .account-number { font-family: 'Orbitron'; font-size: 16px; font-weight: 900; color: var(--gold); letter-spacing: 2px; }
+        .bank-account .account-name { font-size: 9px; color: #ccc; margin-top: 4px; }
+        .upload-section { background: rgba(255,255,255,0.02); border: 2px dashed var(--accent); border-radius: 12px; padding: 16px; text-align: center; margin: 12px 0; cursor: pointer; transition: 0.3s; }
+        .upload-section:active { background: rgba(0,234,255,0.05); }
+        .upload-section i { font-size: 1.8rem; color: var(--accent); margin-bottom: 8px; }
+        .upload-section .file-name { font-size: 8px; color: var(--gold); margin-top: 8px; word-break: break-all; }
+        #payment-proof { display: none; }
+        .payment-info-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--glass-border); }
+        .payment-info-row:last-child { border-bottom: none; }
+        .payment-info-label { font-size: 9px; color: #ccc; font-family: 'Orbitron'; }
+        .payment-info-value { font-size: 11px; font-weight: 900; color: #fff; }
+        .payment-info-value.highlight { color: var(--gold); font-size: 13px; }
+        .confirm-btn { background: linear-gradient(135deg, var(--gold), #ffaa00); color: #000; border: none; padding: 14px; border-radius: 10px; font-family: 'Orbitron'; font-size: 11px; font-weight: 900; cursor: pointer; transition: 0.3s; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 16px; min-height: 48px; }
+        .confirm-btn:active { transform: scale(0.98); }
+        .qr-code-section { text-align: center; margin: 12px 0; }
+        .qr-code-section img { width: 130px; height: 130px; border-radius: 12px; border: 2px solid var(--accent); padding: 4px; background: #fff; }
+
+        /* ====== TAMBAHAN UNTUK GITHUB BACKUP ====== */
+        .github-backup-section {
+            background: rgba(0,0,0,0.3);
+            border: 2px solid var(--gold);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .github-backup-title {
+            color: var(--gold);
+            font-family: 'Orbitron';
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        .github-btn {
+            background: var(--gold);
+            color: #000;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-family: 'Orbitron';
+            font-weight: 900;
+            font-size: 10px;
+            cursor: pointer;
+            margin: 5px;
+            min-width: 120px;
+        }
+        
+        .github-btn-secondary {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-family: 'Orbitron';
+            font-weight: 900;
+            font-size: 10px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        .github-file-input {
+            display: none;
+        }
+        
+        /* Admin Panel */
+        .admin-panel {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--glass-border);
+        }
+        
+        .admin-title {
+            color: var(--dev-color);
+            font-family: 'Orbitron';
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .admin-input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            color: #fff;
+        }
+        
+        .admin-select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            color: #fff;
+        }
+        
+        .weight-slider {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        
+        .weight-value {
+            color: var(--gold);
+            font-weight: 900;
+            min-width: 40px;
+        }
+    </style>
+</head>
+<body class="android-optimized">
+
+<audio id="anime-music" loop><source src="" id="music-src"></audio>
+<video id="bg-vid" loop playsinline muted class="bg-video"><source src="" id="video-src"></video>
+<div class="overlay-vignette"></div>
+
+<!-- PREMIUM WELCOME OVERLAY -->
+<div id="welcome-overlay">
+    <div class="premium-loader">
+        <div class="ring"></div>
+        <div class="ring"></div>
+        <div class="ring"></div>
+        <div class="core">U</div>
+    </div>
+    <div class="premium-title">UNO-STOREZZ</div>
+    <div class="premium-subtitle"><span>GITHUB</span> • EDITION</div>
+    <button class="enter-btn" onclick="enterSystem()">ENTER</button>
+</div>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen" style="display:none; position: fixed; inset: 0; background: #000; z-index: 15000; display: flex; align-items: center; justify-content: center; padding: 20px;">
+    <div class="modal-content" style="max-width: 300px;">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <div style="width: 60px; height: 60px; background: linear-gradient(135deg, var(--accent), var(--dev-color)); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px;">
+                <i class="fa-solid fa-user-astronaut" style="font-size: 26px; color: #000;"></i>
+            </div>
+            <h2 style="font-family:'Orbitron'; color:var(--accent); font-size: 14px;">WELCOME BACK</h2>
+        </div>
+        
+        <input type="text" id="user-login" placeholder="Username" style="text-align: center; margin-bottom: 12px;">
+        <button class="buy-btn" onclick="performAuth()" style="margin-bottom: 8px;">MASUK</button>
+        
+        <div style="text-align: center; margin-top: 12px;">
+            <p style="font-size: 8px;">Developer: ketik "admin"</p>
+        </div>
+    </div>
+</div>
+
+<!-- MAIN HEADER -->
+<header id="main-header" style="display:none;">
+    <div class="logo">UNO-STOREZZ</div>
+    <img src="https://ui-avatars.com/api/?name=U&background=00eaff&color=000" class="profile-btn" id="header-avatar" onclick="showPage('profile')">
+</header>
+
+<!-- MAIN APP CONTAINER -->
+<div class="app-container" id="main-app" style="display:none;">
+    <!-- HOME PAGE -->
+    <div id="page-home">
+        <div class="hero-card">
+            <div class="slider-wrapper" id="slider"></div>
+        </div>
+
+        <div class="gacha-box">
+            <div class="gacha-title"><i class="fa-solid fa-gift"></i> DAILY LUCK SPIN</div>
+            <p style="font-size: 10px; margin-bottom: 10px; opacity: 0.6;">Dapatkan hadiah premium dengan kesempatan langka!</p>
+            
+            <div class="prize-list" id="gacha-prize-list"></div>
+            
+            <button id="btn-gacha-action" class="buy-btn" onclick="spinGacha()">SPIN NOW</button>
+            <div id="gacha-result-container" style="margin-top: 8px;"></div>
+        </div>
+
+        <div class="category-grid">
+            <div class="cat-btn active" onclick="loadCategory('sewa', this)"><i class="fa-solid fa-robot"></i><span>Sewa</span></div>
+            <div class="cat-btn" onclick="loadCategory('premium', this)"><i class="fa-solid fa-crown"></i><span>Prem</span></div>
+            <div class="cat-btn" onclick="loadCategory('script', this)"><i class="fa-solid fa-code"></i><span>Code</span></div>
+            <div class="cat-btn" onclick="loadCategory('lainnya', this)"><i class="fa-solid fa-layer-group"></i><span>Misc</span></div>
+        </div>
+        <div id="catalog"></div>
+    </div>
+
+    <!-- PROFILE PAGE -->
+    <div id="page-profile" style="display:none;">
+        <div class="glass-card" style="text-align:center;">
+            <div style="position: relative; width: 80px; margin: 0 auto 12px;">
+                <img src="https://ui-avatars.com/api/?name=U&background=00eaff&color=000" id="profile-img-display" style="width:80px; height:80px; border-radius:20px; border:2.5px solid var(--accent); object-fit:cover;">
+                <label for="pfp-upload" style="position: absolute; bottom: -5px; right: -5px; background: var(--accent); width: 24px; height: 24px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #000; cursor: pointer;"><i class="fa-solid fa-pencil" style="font-size: 9px;"></i></label>
+                <input type="file" id="pfp-upload" style="display: none;" accept="image/*" onchange="updateProfilePhoto(this)">
+            </div>
+            
+            <div class="profile-name-section">
+                <h3 id="display-user-name" style="font-family:'Orbitron'; font-size:14px;">USER</h3>
+                <button class="edit-name-btn" onclick="openEditNameModal()">
+                    <i class="fa-solid fa-pen"></i> UBAH
+                </button>
+            </div>
+            
+            <div id="profile-julukan-container" style="margin-bottom: 8px;"></div>
+            <div id="name-tag-container" class="name-tag-container"></div>
+
+            <!-- GITHUB BACKUP SECTION -->
+            <div class="github-backup-section">
+                <div class="github-backup-title">
+                    <i class="fa-brands fa-github"></i> GITHUB BACKUP
+                </div>
+                <p style="font-size: 10px; margin-bottom: 15px;">Backup semua data ke file JSON</p>
+                <div>
+                    <button class="github-btn" onclick="backupToGitHub()">
+                        <i class="fa-solid fa-download"></i> BACKUP
+                    </button>
+                    <button class="github-btn-secondary" onclick="document.getElementById('github-restore').click()">
+                        <i class="fa-solid fa-upload"></i> RESTORE
+                    </button>
+                    <input type="file" id="github-restore" class="github-file-input" accept=".json" onchange="restoreFromGitHub(this)">
+                </div>
+            </div>
+
+            <!-- ADMIN PANEL (HANYA UNTUK DEVELOPER) -->
+            <div id="admin-panel" class="admin-panel" style="display: none;">
+                <div class="admin-title">
+                    <i class="fa-solid fa-crown"></i> ADMIN PANEL
+                </div>
+                
+                <!-- TAMBAH PRODUK -->
+                <select id="prod-cat" class="admin-select">
+                    <option value="sewa">Sewa Bot</option>
+                    <option value="premium">Premium</option>
+                    <option value="script">Script</option>
+                    <option value="lainnya">Lainnya</option>
+                </select>
+                <input type="text" id="prod-name" class="admin-input" placeholder="Nama Produk">
+                <input type="text" id="prod-price" class="admin-input" placeholder="Harga">
+                <button class="buy-btn" onclick="addProduct()">TAMBAH PRODUK</button>
+                
+                <!-- TAMBAH GACHA -->
+                <input type="text" id="gacha-name" class="admin-input" placeholder="Nama Hadiah">
+                <select id="gacha-type" class="admin-select">
+                    <option value="premium">Premium</option>
+                    <option value="sewa">Sewa Bot</option>
+                </select>
+                <input type="number" id="gacha-days" class="admin-input" placeholder="Durasi (hari)" min="1" max="14" value="3">
+                <div class="weight-slider">
+                    <input type="range" id="gacha-weight" min="1" max="100" value="10" oninput="document.getElementById('weight-value').innerText=this.value+'%'">
+                    <span id="weight-value" class="weight-value">10%</span>
+                </div>
+                <button class="buy-btn" onclick="addGacha()">TAMBAH GACHA</button>
+                
+                <!-- MEDIA SETTINGS -->
+                <input type="text" id="video-url" class="admin-input" placeholder="URL Video Background">
+                <input type="text" id="music-url" class="admin-input" placeholder="URL Music">
+                <button class="buy-btn" onclick="updateMedia()">UPDATE MEDIA</button>
+                
+                <!-- RESET -->
+                <button class="buy-btn" onclick="resetAllData()" style="background:#ff5555; color:#fff;">RESET DATA</button>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 16px 0;">
+                <a href="https://wa.me/6283856169422" target="_blank" style="background:var(--glass); padding:12px; border-radius:12px; border:1px solid var(--glass-border); color: #25d366;"><i class="fa-brands fa-whatsapp"></i></a>
+                <a href="https://t.me/Unodistrik13" target="_blank" style="background:var(--glass); padding:12px; border-radius:12px; border:1px solid var(--glass-border); color: #0088cc;"><i class="fa-brands fa-telegram"></i></a>
+                <a href="#" style="background:var(--glass); padding:12px; border-radius:12px; border:1px solid var(--glass-border); color: #fff;"><i class="fa-brands fa-tiktok"></i></a>
+            </div>
+
+            <button class="buy-btn" style="background:rgba(255,255,255,0.05); color:#fff;" onclick="logout()">LOGOUT</button>
+        </div>
+    </div>
+</div>
+
+<!-- PAYMENT MODAL -->
+<div id="paymentModal" class="modal">
+    <div class="modal-content" style="max-width:400px;">
+        <h2 style="font-family:'Orbitron'; color:var(--accent); font-size: 14px; text-align:center; margin-bottom:16px;">
+            <i class="fa-solid fa-credit-card"></i> KONFIRMASI PEMBAYARAN
+        </h2>
+        
+        <div class="payment-detail-card">
+            <div class="payment-info-row">
+                <span class="payment-info-label">Produk</span>
+                <span class="payment-info-value" id="pay-item-name">-</span>
+            </div>
+            <div class="payment-info-row">
+                <span class="payment-info-label">Harga</span>
+                <span class="payment-info-value highlight" id="pay-item-price">Rp 0</span>
+            </div>
+            <div class="payment-info-row">
+                <span class="payment-info-label">Pembeli</span>
+                <span class="payment-info-value" id="pay-buyer-name">-</span>
+            </div>
+        </div>
+        
+        <div class="bank-account">
+            <i class="fa-solid fa-building-columns" style="color:var(--gold); font-size: 18px; margin-bottom: 8px;"></i>
+            <div class="account-number" id="display-account-number">0823-2615-3257</div>
+            <div class="account-name" id="display-account-name">a.n UNO-STOREZZ</div>
+        </div>
+        
+        <div class="payment-method" id="payment-methods-display">
+            <i class="fa-brands fa-whatsapp"></i>
+            <div style="flex:1;">
+                <span class="method-name" id="payment-methods-text">DANA • GOPAY • OVO</span><br>
+                <span style="font-size:8px;">Transfer ke nomor di atas</span>
+            </div>
+        </div>
+        
+        <div class="upload-section" onclick="document.getElementById('payment-proof').click()">
+            <i class="fa-solid fa-cloud-upload-alt"></i>
+            <p>Klik untuk upload bukti transfer</p>
+            <div id="file-name-display" class="file-name"></div>
+        </div>
+        <input type="file" id="payment-proof" accept="image/*" onchange="handleFileUpload(this)">
+        
+        <div class="qr-code-section">
+            <img src="https://via.placeholder.com/130x130?text=QR+Code" id="qr-code-image" alt="QR Code">
+        </div>
+        
+        <button class="confirm-btn" onclick="sendPaymentConfirmation()">
+            <i class="fa-brands fa-whatsapp"></i> KIRIM
+        </button>
+        <button class="buy-btn" style="background:rgba(255,255,255,0.05); color:#fff; margin-top:8px;" onclick="closeModal('paymentModal')">BATAL</button>
+    </div>
+</div>
+
+<!-- EDIT NAME MODAL -->
+<div id="editNameModal" class="modal">
+    <div class="modal-content">
+        <h2 style="font-family:'Orbitron'; color:var(--accent); font-size: 13px; text-align:center; margin-bottom:16px;">UBAH NAMA</h2>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            <input type="text" id="new-name-input" placeholder="Nama baru..." maxlength="20">
+            <button class="buy-btn" onclick="saveNewName()" style="background:var(--accent); color:#000;">SIMPAN</button>
+            <button class="buy-btn" style="background:rgba(255,255,255,0.05); color:#fff;" onclick="closeModal('editNameModal')">BATAL</button>
+        </div>
+    </div>
+</div>
+
+<!-- DOCK NAVIGATION -->
+<nav class="dock-nav" id="main-nav" style="display:none;">
+    <div class="dock-item active" id="btn-home" onclick="showPage('home')"><i class="fa-solid fa-ghost"></i>STORE</div>
+    <div class="dock-item" id="btn-profile" onclick="showPage('profile')"><i class="fa-solid fa-user-astronaut"></i>CORE</div>
+</nav>
+
+<script>
+    // ==================== DATA DEFAULT DENGAN HARGA ANDA ====================
+    let config = {
+        accent: "#00eaff",
+        bgVideo: "",
+        bgMusic: "",
+        banners: ["https://via.placeholder.com/400x160?text=Banner+1"],
+        prices: {
+            sewa: [
+                { n: "🤖 Sewa Bot 4 Hari", p: "3000" },
+                { n: "🤖 Sewa Bot 7 Hari", p: "5000" },
+                { n: "🤖 Sewa Bot 14 Hari", p: "6000" },
+                { n: "🤖 Sewa Bot 1 Bulan", p: "8000" },
+                { n: "🤖 Sewa Bot 2 Bulan", p: "15000" },
+                { n: "🤖 Sewa Bot 3 Bulan", p: "23000" },
+                { n: "🤖 Sewa Bot 1 Tahun", p: "35000" }
+            ],
+            premium: [
+                { n: "👑 Premium 7 Hari", p: "1000" },
+                { n: "👑 Premium 14 Hari", p: "1500" },
+                { n: "👑 Premium 1 Bulan", p: "4000" },
+                { n: "👑 Premium 2 Bulan", p: "7000" },
+                { n: "👑 Premium 3 Bulan", p: "12000" },
+                { n: "👑 Premium 1 Tahun", p: "19000" }
+            ],
+            script: [
+                { n: "📜 Script Alya AI", p: "65000" }
+            ],
+            lainnya: [
+                { n: "🔧 Jasa bug wa", p: "5000" }
+            ]
+        },
+        members: [],
+        gachaPrizes: [
+            // GACHA SEWA (1-14 hari)
+            { name: "🎁 Sewa 1 Hari", type: "sewa", days: 1, weight: 10 },
+            { name: "🎁 Sewa 2 Hari", type: "sewa", days: 2, weight: 9 },
+            { name: "🎁 Sewa 3 Hari", type: "sewa", days: 3, weight: 8 },
+            { name: "🎁 Sewa 4 Hari", type: "sewa", days: 4, weight: 7 },
+            { name: "🎁 Sewa 5 Hari", type: "sewa", days: 5, weight: 6 },
+            { name: "🎁 Sewa 6 Hari", type: "sewa", days: 6, weight: 5 },
+            { name: "🎁 Sewa 7 Hari", type: "sewa", days: 7, weight: 4 },
+            { name: "🎁 Sewa 8 Hari", type: "sewa", days: 8, weight: 3 },
+            { name: "🎁 Sewa 9 Hari", type: "sewa", days: 9, weight: 2.5 },
+            { name: "🎁 Sewa 10 Hari", type: "sewa", days: 10, weight: 2 },
+            { name: "🎁 Sewa 11 Hari", type: "sewa", days: 11, weight: 1.5 },
+            { name: "🎁 Sewa 12 Hari", type: "sewa", days: 12, weight: 1 },
+            { name: "🎁 Sewa 13 Hari", type: "sewa", days: 13, weight: 0.8 },
+            { name: "🎁 Sewa 14 Hari", type: "sewa", days: 14, weight: 0.5 },
+            
+            // GACHA PREMIUM (1-14 hari)
+            { name: "✨ Premium 1 Hari", type: "premium", days: 1, weight: 5 },
+            { name: "✨ Premium 2 Hari", type: "premium", days: 2, weight: 4.5 },
+            { name: "✨ Premium 3 Hari", type: "premium", days: 3, weight: 4 },
+            { name: "✨ Premium 4 Hari", type: "premium", days: 4, weight: 3.5 },
+            { name: "✨ Premium 5 Hari", type: "premium", days: 5, weight: 3 },
+            { name: "✨ Premium 6 Hari", type: "premium", days: 6, weight: 2.5 },
+            { name: "✨ Premium 7 Hari", type: "premium", days: 7, weight: 2 },
+            { name: "✨ Premium 8 Hari", type: "premium", days: 8, weight: 1.8 },
+            { name: "✨ Premium 9 Hari", type: "premium", days: 9, weight: 1.5 },
+            { name: "✨ Premium 10 Hari", type: "premium", days: 10, weight: 1.2 },
+            { name: "✨ Premium 11 Hari", type: "premium", days: 11, weight: 1 },
+            { name: "✨ Premium 12 Hari", type: "premium", days: 12, weight: 0.8 },
+            { name: "✨ Premium 13 Hari", type: "premium", days: 13, weight: 0.6 },
+            { name: "✨ Premium 14 Hari", type: "premium", days: 14, weight: 0.4 }
+        ],
+        payment: {
+            accountNumber: "0823-2615-3257",
+            accountName: "a.n UNO-STOREZZ",
+            qrCode: "https://via.placeholder.com/130x130?text=QR+Code",
+            methods: {
+                dana: true,
+                gopay: true,
+                ovo: true
+            }
+        }
+    };
+
+    // Load dari localStorage
+    function loadLocalData() {
+        try {
+            const saved = localStorage.getItem('uno_github_data');
+            if (saved) {
+                const loaded = JSON.parse(saved);
+                config = { ...config, ...loaded };
+            }
+        } catch(e) {
+            console.log('Gagal load data');
+        }
+    }
+    loadLocalData();
+
+    function saveLocal() {
+        localStorage.setItem('uno_github_data', JSON.stringify(config));
+    }
+
+    let currentUser = null;
+    let slideIdx = 0;
+    let tempProd = "", tempPrice = "";
+    let uploadedFile = null;
+    let slideInterval;
+    let lastGachaResult = null;
+
+    // ==================== FUNGSI UTAMA ====================
+    function enterSystem() {
+        document.getElementById('welcome-overlay').style.opacity = "0";
+        setTimeout(() => {
+            document.getElementById('welcome-overlay').style.display = "none";
+            document.getElementById('login-screen').style.display = 'flex';
+        }, 1000);
+    }
+
+    function performAuth() {
+        const username = document.getElementById('user-login').value.trim();
+        
+        if (!username) {
+            alert("Masukkan username!");
+            return;
+        }
+        
+        const isAdmin = username.toLowerCase() === 'admin';
+        
+        currentUser = {
+            name: isAdmin ? 'ARCHITECT' : username,
+            role: isAdmin ? 'developer' : 'member'
+        };
+        
+        localStorage.setItem('uno_session', JSON.stringify(currentUser));
+        
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('main-header').style.display = 'flex';
+        document.getElementById('main-app').style.display = 'block';
+        document.getElementById('main-nav').style.display = 'flex';
+        
+        // Update UI
+        document.getElementById('display-user-name').innerText = currentUser.name;
+        document.getElementById('header-avatar').src = `https://ui-avatars.com/api/?name=${currentUser.name.charAt(0)}&background=00eaff&color=000`;
+        document.getElementById('profile-img-display').src = `https://ui-avatars.com/api/?name=${currentUser.name.charAt(0)}&background=00eaff&color=000`;
+        
+        // Tampilkan admin panel jika developer
+        if (isAdmin) {
+            document.getElementById('admin-panel').style.display = 'block';
+            document.getElementById('name-tag-container').innerHTML = '<div class="name-tag developer-tag"><i class="fa-solid fa-crown"></i> ARCHITECT</div>';
+        } else {
+            document.getElementById('name-tag-container').innerHTML = '<div class="name-tag member-tag"><i class="fa-solid fa-user"></i> MEMBER</div>';
+        }
+        
+        // Auto save member
+        if (!config.members.some(m => m.name === currentUser.name)) {
+            config.members.push({
+                name: currentUser.name,
+                role: currentUser.role,
+                joinDate: new Date().toLocaleDateString()
+            });
+            saveLocal();
+        }
+        
+        loadCategory('sewa');
+        renderGachaPrizeList();
+        startSlideShow();
+    }
+
+    function loadCategory(cat, el) {
+        if (el) {
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+        }
+        
+        const products = config.prices[cat] || [];
+        const catalog = document.getElementById('catalog');
+        
+        if (products.length === 0) {
+            catalog.innerHTML = '<p style="text-align:center; padding:20px;">Tidak ada produk</p>';
+            return;
+        }
+        
+        catalog.innerHTML = products.map(p => `
+            <div class="glass-card">
+                <div class="card-title">${p.n}</div>
+                <div class="price-tag">Rp ${parseInt(p.p).toLocaleString()}</div>
+                <button class="buy-btn" onclick="openPay('${p.n}', '${p.p}')">BELI</button>
+            </div>
+        `).join('');
+    }
+
+    function renderGachaPrizeList() {
+        const list = document.getElementById('gacha-prize-list');
+        if (!list) return;
+        
+        if (!config.gachaPrizes || config.gachaPrizes.length === 0) {
+            list.innerHTML = '<p style="text-align:center;">Belum ada hadiah</p>';
+            return;
+        }
+        
+        // Urutkan berdasarkan weight
+        const sorted = [...config.gachaPrizes].sort((a, b) => b.weight - a.weight);
+        
+        list.innerHTML = sorted.map(g => `
+            <div class="prize-item">
+                <i class="fa-solid fa-${g.type === 'premium' ? 'crown' : 'robot'}" style="color:${g.type === 'premium' ? 'var(--gold)' : 'var(--accent)'};"></i>
+                <span class="prize-name">${g.name}</span>
+                <span class="prize-chance">${g.weight}%</span>
+            </div>
+        `).join('');
+    }
+
+    function spinGacha() {
+        if (!currentUser) return alert('Login dulu!');
+        
+        const last = localStorage.getItem(`gacha_${currentUser.name}`);
+        if (last && (Date.now() - parseInt(last)) < 86400000) {
+            const hours = Math.ceil((86400000 - (Date.now() - parseInt(last))) / 3600000);
+            return alert(`Tunggu ${hours} jam lagi!`);
+        }
+        
+        const totalWeight = config.gachaPrizes.reduce((s, g) => s + g.weight, 0);
+        let random = Math.random() * totalWeight;
+        let selected = config.gachaPrizes[0];
+        
+        for (const g of config.gachaPrizes) {
+            if (random < g.weight) {
+                selected = g;
+                break;
+            }
+            random -= g.weight;
+        }
+        
+        lastGachaResult = selected;
+        localStorage.setItem(`gacha_${currentUser.name}`, Date.now().toString());
+        
+        document.getElementById('gacha-result-container').innerHTML = `
+            <div style="background:rgba(255,204,0,0.2); border-radius:8px; padding:12px; text-align:center; border:1px solid var(--gold);">
+                <p>🎉 SELAMAT! 🎉</p>
+                <p style="font-size:14px; font-weight:900; color:var(--gold);">${selected.name}</p>
+                <button class="claim-btn" onclick="claimGachaPrize()">CLAIM</button>
+            </div>
+        `;
+    }
+
+    function claimGachaPrize() {
+        if (!lastGachaResult) return alert('Tidak ada hadiah!');
+        
+        const wa = '6283856169422';
+        const msg = `*KLAIM GACHA*\n\n👤 ${currentUser.name}\n🎁 ${lastGachaResult.name}\n📆 ${lastGachaResult.days} hari`;
+        
+        window.open(`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`, '_blank');
+        alert('Kirim pesan ke WA!');
+        
+        lastGachaResult = null;
+        document.getElementById('gacha-result-container').innerHTML = '';
+    }
+
+    function openPay(name, price) {
+        if (!currentUser) return alert('Login dulu!');
+        
+        tempProd = name;
+        tempPrice = price;
+        
+        document.getElementById('pay-item-name').innerText = name;
+        document.getElementById('pay-item-price').innerText = 'Rp ' + price;
+        document.getElementById('pay-buyer-name').innerText = currentUser.name;
+        
+        document.getElementById('paymentModal').style.display = 'flex';
+    }
+
+    function handleFileUpload(input) {
+        if (input.files && input.files[0]) {
+            uploadedFile = input.files[0];
+            document.getElementById('file-name-display').innerHTML = `<i class="fa-solid fa-check-circle"></i> ${uploadedFile.name}`;
+        }
+    }
+
+    function sendPaymentConfirmation() {
+        if (!uploadedFile) return alert('Upload bukti transfer!');
+        
+        const wa = config.payment.accountNumber || '6283856169422';
+        const methods = [];
+        if (config.payment.methods.dana) methods.push('DANA');
+        if (config.payment.methods.gopay) methods.push('GOPAY');
+        if (config.payment.methods.ovo) methods.push('OVO');
+        
+        const msg = `*KONFIRMASI PEMBAYARAN*\n\n👤 ${currentUser.name}\n📦 ${tempProd}\n💰 Rp ${tempPrice}\n🏦 ${config.payment.accountNumber}\n💸 ${methods.join('/')}\n\n✅ Bukti: ${uploadedFile.name}`;
+        
+        window.open(`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`, '_blank');
+        alert('Kirim pesan ke WA!');
+        
+        closeModal('paymentModal');
+    }
+
+    // ==================== GITHUB BACKUP ====================
+    function backupToGitHub() {
+        const dataStr = JSON.stringify(config, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `uno-backup-${new Date().toISOString().slice(0,10)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        alert('✅ Backup siap! File bisa diupload ke GitHub.');
+    }
+
+    function restoreFromGitHub(input) {
+        if (!input.files || !input.files[0]) return;
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                config = JSON.parse(e.target.result);
+                saveLocal();
+                alert('✅ Restore berhasil!');
+                location.reload();
+            } catch {
+                alert('❌ File tidak valid!');
+            }
+        };
+        reader.readAsText(input.files[0]);
+    }
+
+    // ==================== ADMIN FUNCTIONS ====================
+    function addProduct() {
+        const cat = document.getElementById('prod-cat').value;
+        const name = document.getElementById('prod-name').value.trim();
+        const price = document.getElementById('prod-price').value.trim();
+        
+        if (!name || !price) return alert('Isi semua!');
+        
+        config.prices[cat].push({ n: name, p: price });
+        saveLocal();
+        
+        document.getElementById('prod-name').value = '';
+        document.getElementById('prod-price').value = '';
+        
+        alert('Produk ditambahkan!');
+        if (document.querySelector('.cat-btn.active span')?.innerText.toLowerCase() === cat) {
+            loadCategory(cat);
+        }
+    }
+
+    function addGacha() {
+        const name = document.getElementById('gacha-name').value.trim();
+        const type = document.getElementById('gacha-type').value;
+        const days = parseInt(document.getElementById('gacha-days').value);
+        const weight = parseFloat(document.getElementById('gacha-weight').value);
+        
+        if (!name || !days || !weight) return alert('Isi semua!');
+        if (days > 14) return alert('Maksimal 14 hari!');
+        
+        config.gachaPrizes.push({ name, type, days, weight });
+        saveLocal();
+        
+        document.getElementById('gacha-name').value = '';
+        alert('Gacha ditambahkan!');
+        renderGachaPrizeList();
+    }
+
+    function updateMedia() {
+        const video = document.getElementById('video-url').value.trim();
+        const music = document.getElementById('music-url').value.trim();
+        
+        if (video) config.bgVideo = video;
+        if (music) config.bgMusic = music;
+        
+        saveLocal();
+        updatePublicDisplay();
+        alert('Media updated!');
+    }
+
+    function resetAllData() {
+        if (confirm('⚠️ HAPUS SEMUA DATA?')) {
+            localStorage.removeItem('uno_github_data');
+            localStorage.removeItem('uno_session');
+            location.reload();
+        }
+    }
+
+    // ==================== FUNGSI LAINNYA ====================
+    function updatePublicDisplay() {
+        const video = document.getElementById('bg-vid');
+        const videoSrc = document.getElementById('video-src');
+        if (config.bgVideo && videoSrc) {
+            videoSrc.src = config.bgVideo;
+            video.load();
+            video.play().catch(() => {});
+        }
+        
+        const audio = document.getElementById('anime-music');
+        const musicSrc = document.getElementById('music-src');
+        if (config.bgMusic && musicSrc) {
+            musicSrc.src = config.bgMusic;
+            audio.load();
+            audio.play().catch(() => {});
+        }
+        
+        renderSlider();
+    }
+
+    function renderSlider() {
+        const slider = document.getElementById('slider');
+        if (slider && config.banners && config.banners.length > 0) {
+            slider.innerHTML = config.banners.map(b => `<div class="slide"><img src="${b}" onerror="this.src='https://via.placeholder.com/400x160'"></div>`).join('');
+        }
+    }
+
+    function startSlideShow() {
+        if (slideInterval) clearInterval(slideInterval);
+        slideInterval = setInterval(() => {
+            if (config.banners && config.banners.length > 0) {
+                slideIdx = (slideIdx + 1) % config.banners.length;
+                document.getElementById('slider').style.transform = `translateX(-${slideIdx * 100}%)`;
+            }
+        }, 4000);
+    }
+
+    function openEditNameModal() {
+        document.getElementById('new-name-input').value = currentUser.name;
+        document.getElementById('editNameModal').style.display = 'flex';
+    }
+
+    function saveNewName() {
+        const newName = document.getElementById('new-name-input').value.trim();
+        if (!newName) return alert('Nama tidak boleh kosong!');
+        
+        currentUser.name = newName;
+        localStorage.setItem('uno_session', JSON.stringify(currentUser));
+        
+        document.getElementById('display-user-name').innerText = newName;
+        document.getElementById('editNameModal').style.display = 'none';
+        alert('Nama diubah!');
+    }
+
+    function updateProfilePhoto(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('profile-img-display').src = e.target.result;
+                document.getElementById('header-avatar').src = e.target.result;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function showPage(page) {
+        document.getElementById('page-home').style.display = page === 'home' ? 'block' : 'none';
+        document.getElementById('page-profile').style.display = page === 'profile' ? 'block' : 'none';
+        document.getElementById('btn-home').classList.toggle('active', page === 'home');
+        document.getElementById('btn-profile').classList.toggle('active', page === 'profile');
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).style.display = 'none';
+    }
+
+    function logout() {
+        if (confirm('Logout?')) {
+            localStorage.removeItem('uno_session');
+            location.reload();
+        }
+    }
+
+    // Auto save
+    setInterval(saveLocal, 30000);
+</script>
+</body>
+</html>
