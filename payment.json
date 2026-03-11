@@ -1,0 +1,12 @@
+{
+  "accountNumber": "0823-2615-3257",
+  "accountName": "a.n M Fuad Akbar Firmansyah",
+  "qrCode": "",
+  "methods": {
+    "dana": true,
+    "gopay": true,
+    "ovo": true
+  },
+  "whatsapp": "6283856169422",
+  "lastUpdated": "2024-03-20T10:00:00.000Z"
+}
