@@ -1,0 +1,26 @@
+{
+  "sewa": [
+    { "n": "🤖 Sewa Bot 4 Hari", "p": "3000" },
+    { "n": "🤖 Sewa Bot 7 Hari", "p": "5000" },
+    { "n": "🤖 Sewa Bot 14 Hari", "p": "6000" },
+    { "n": "🤖 Sewa Bot 1 Bulan", "p": "8000" },
+    { "n": "🤖 Sewa Bot 2 Bulan", "p": "15000" },
+    { "n": "🤖 Sewa Bot 3 Bulan", "p": "23000" },
+    { "n": "🤖 Sewa Bot 1 Tahun", "p": "35000" }
+  ],
+  "premium": [
+    { "n": "👑 Premium 7 Hari", "p": "1000" },
+    { "n": "👑 Premium 14 Hari", "p": "1500" },
+    { "n": "👑 Premium 1 Bulan", "p": "4000" },
+    { "n": "👑 Premium 2 Bulan", "p": "7000" },
+    { "n": "👑 Premium 3 Bulan", "p": "12000" },
+    { "n": "👑 Premium 1 Tahun", "p": "19000" }
+  ],
+  "script": [
+    { "n": "📜 Script Alya AI", "p": "65000" }
+  ],
+  "lainnya": [
+    { "n": "🔧 Jasa bug wa", "p": "5000" }
+  ],
+  "lastUpdated": "2024-03-20T10:00:00.000Z"
+}
